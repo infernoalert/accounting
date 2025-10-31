@@ -1,0 +1,122 @@
+This is an excellent project, and as a consultant, I can tell you this is a very common and valuable problem to solve. Focusing on the backend first is the right move; it's the engine of the entire application.
+
+Here is a high-level architectural plan—the "best way" to develop this backend using a modern, serverless approach that is robust and scalable from day one.
+
+Executive Summary: The Architectural Choice
+We will design a Serverless Data-Processing Pipeline using Cloud Functions for Firebase and Cloud Firestore.
+
+Why Serverless? You pay only for what you use (per-upload, per-transaction), it scales automatically from one user to one million, and you never have to manage a server. It's the definition of focusing on the backend logic, not the infrastructure.
+
+Why Firestore? It's a flexible NoSQL database that directly maps to your requirements and syncs with cloud functions perfectly.
+
+Here is the blueprint for the four key components of your backend.
+
+Component 1: The Database Model (Cloud Firestore)
+First, we design the database "schema." You'll have two main Collections (think of them as tables).
+
+transactions Collection: This is the main database for all imported statement items.
+
+Each transaction will be a Document with the following fields:
+
+userId: (Essential for a future multi-user app)
+
+date: A Timestamp (This is crucial for sorting)
+
+item: The raw text description (e.g., "COLES 0456 RICHMOND")
+
+amount: A Number (e.g., -24.50).
+
+Consultant's Note: Instead of Income and Outcome fields, storing a single amount is far more powerful. Positive numbers are income, negative numbers are outcome. This makes balance calculations trivial.
+
+category: (e.g., "Grocery")
+
+subCategory: (e.g., "Supermarket")
+
+note: (A string for user notes)
+
+transactionHash: (A unique string. This is the key to our deduplication logic, see Component 2).
+
+categorizationRules Collection: This is your "training" database. It's a simple lookup table.
+
+Each rule will be a Document with these fields:
+
+userId: (So each user has their own rules)
+
+keyword: A lowercase string (e.g., "coles")
+
+category: The category to apply (e.g., "Grocery")
+
+subCategory: The sub-category to apply (e.g., "Supermarket")
+
+Component 2: The Data Import Engine (A Cloud Function)
+This is the most important piece of logic. We will create a single HTTP-Triggered Cloud Function called importCSV. When the (future) frontend uploads a CSV, it will send the file's contents to this function's secure URL.
+
+Here is the step-by-step logic the function will execute:
+
+Receive and Parse: The function receives the raw CSV text. It will use a standard parsing library to convert the CSV into a list of JSON objects (e.g., [{date: '...', description: '...', amount: '...'}, ...]).
+
+Fetch Rules: It makes one (and only one) database query to fetch all documents from the categorizationRules collection for that user. This list of rules is now held in memory.
+
+Process Each Row (Loop): The function will loop through every single row from the CSV. For each row, it performs the following steps in order.
+
+A. Transform and Hash (Deduplication):
+
+It first cleans the data (e.g., converts the date string to a Timestamp, the amount string to a Number).
+
+It then creates a unique hash (e.g., an SHA-256 hash) from a combination of the key data points: date + item + amount. This creates a unique signature for that transaction, like a8c4e....
+
+This transactionHash is our key to solving duplication.
+
+B. Deduplication Check:
+
+The function will query the transactions collection with a simple question: "Does any document already exist with this transactionHash?"
+
+If YES: The transaction is a duplicate. The function skips this row and moves to the next one. The original transaction is not imported, fulfilling your requirement.
+
+If NO: The transaction is new. It proceeds to the next step.
+
+C. Categorization (The "Training"):
+
+The function takes the item string (e.g., "COLES 0456 RICHMOND") and converts it to lowercase.
+
+It then checks this string against the list of categorizationRules it fetched in Step 2.
+
+If a match is found (e.g., the string "coles 0456 richmond" contains the keyword "coles"): It applies the category and subCategory from the rule.
+
+If no match is found: It applies a default, like category: "Uncategorized".
+
+Batch Write: The function does not save each transaction to the database one by one (this is slow and costly). It adds the new, processed transaction object (with its hash and category) to a "batch."
+
+Commit: After the loop finishes, the function commits the entire batch of new transactions to Firestore in a single, fast, and atomic operation.
+
+Component 3: The "Training" Engine (The Feedback Loop)
+Your requirement for "training" is a feedback loop. This is how the categorizationRules collection gets populated. We need a way for the user to "teach" the app.
+
+We will create two more simple Cloud Functions:
+
+createRule(keyword, category, subCategory):
+
+This function is called by the frontend when a user manually creates a new categorization rule.
+
+It simply creates a new document in the categorizationRules collection with the data provided.
+
+updateTransactionCategory(transactionId, newCategory, newSubCategory, keywordToLearn):
+
+This is the "learning" function. When the user re-categorizes an "Uncategorized" item, the frontend calls this function.
+
+It does two things:
+
+It updates the specific transaction in the transactions collection with the newCategory and newSubCategory.
+
+It also calls the createRule function (or does it itself) to save this new rule (e.g., keywordToLearn: "coles", newCategory: "Grocery").
+
+The next time a CSV is imported, the "coles" keyword will be in the ruleset, and all "Coles" items will be categorized automatically.
+
+Component 4: Security (Firebase Rules)
+Finally, to tie this all together, we must secure the database. Firestore's Security Rules are perfect for this. We will write rules that state:
+
+A user can only read or write documents (transactions, rules) that have their own userId on them.
+
+A Cloud Function (like our importCSV function) has special admin privileges and is allowed to perform its batch-write operations, but a user cannot call the database directly from the frontend to do so.
+
+This architecture is secure, highly efficient, and directly solves your three core requirements (DB schema, deduplication, and keyword-based categorization) in a professional, scalable manner.

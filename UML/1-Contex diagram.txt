@@ -1,0 +1,8 @@
+graph TD
+    A[User] -- "Uploads CSV" --> B(Frontend / Web App)
+    B -- "POST /api/upload (CSV)" --> C(Backend: Express.js API)
+    C -- "SELECT Rules, INSERT Transactions" --> D[Database: PostgreSQL]
+    
+    A -- "Manages Rules/Transactions" --> B
+    B -- "POST /api/rules" --> C
+    B -- "PUT /api/transactions/:id" --> C
