@@ -1,16 +1,17 @@
 // Load environment variables from .env file
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-const express = require('express');
+import express, { Request, Response } from 'express';
 
 // Import routes
-const authRoutes = require('./auth/auth.routes');
-const transactionRoutes = require('./transactions/transactions.routes');
-const ruleRoutes = require('./rules/rules.routes');
+import authRoutes from './auth/auth.route';
+import transactionRoutes from './transactions/transactions.route';
+import ruleRoutes from './rules/rules.route';
 
 // App Initialization
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT: number = parseInt(process.env.PORT || '3000', 10);
 
 // --- Global Middleware ---
 // Parse JSON request bodies
@@ -23,7 +24,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/rules', ruleRoutes);
 
 // A simple "hello world" route
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.send('Hello, your refactored Express server is running!');
 });
 
@@ -31,3 +32,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is listening on http://localhost:${PORT}`);
 });
+

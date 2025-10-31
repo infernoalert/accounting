@@ -1,11 +1,7 @@
-const { body } = require('express-validator');
+import { body } from 'express-validator';
 
-const validateRule = [
+export const validateRule = [
   body('keyword', 'Keyword is required').not().isEmpty().isString(),
   body('category', 'Category is required').not().isEmpty().isString(),
   body('subCategory').optional().isString(),
 ];
-
-module.exports = {
-  validateRule,
-};

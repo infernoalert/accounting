@@ -1,10 +1,12 @@
-const { validationResult } = require('express-validator');
-// const rulesModel = require('./rules.model');
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
+// import * as rulesModel from './rules.model';
 
-const createOrUpdateRule = (req, res) => {
+export const createOrUpdateRule = (req: Request, res: Response): void => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
 
   // const userId = req.user.id; // TODO: Get from auth token
@@ -25,7 +27,7 @@ const createOrUpdateRule = (req, res) => {
   // 2. Return the new/updated rule
 };
 
-const getRules = (req, res) => {
+export const getRules = (req: Request, res: Response): void => {
   // const userId = req.user.id; // TODO: Get from auth token
 
   // Placeholder logic
@@ -35,9 +37,4 @@ const getRules = (req, res) => {
   // TODO:
   // 1. Call rulesModel.getRulesForUser(userId)
   // 2. Return the list of rules
-};
-
-module.exports = {
-  createOrUpdateRule,
-  getRules,
 };

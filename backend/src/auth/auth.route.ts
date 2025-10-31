@@ -1,7 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const authController = require('./auth.controller');
-const authValidator = require('./auth.validator');
+import express, { Router } from 'express';
+import * as authController from './auth.controller';
+import * as authValidator from './auth.validator';
+
+const router: Router = express.Router();
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
@@ -19,4 +20,4 @@ router.post(
   authController.login
 );
 
-module.exports = router;
+export default router;

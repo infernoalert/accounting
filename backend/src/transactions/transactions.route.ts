@@ -1,12 +1,13 @@
-const express = require('express');
-const router = express.Router();
-const txController = require('./transactions.controller');
-// const txValidator = require('./transactions.validator');
-// const authMiddleware = require('../middleware/auth.middleware'); // We will create this later
+import express, { Router } from 'express';
+import * as txController from './transactions.controller';
+// import * as txValidator from './transactions.validator';
+// import authMiddleware from '../middleware/auth.middleware'; // We will create this later
 
 // We'll use multer for file uploads
-const multer = require('multer');
+import multer from 'multer';
 const upload = multer({ storage: multer.memoryStorage() }); // Store file in memory
+
+const router: Router = express.Router();
 
 // @route   POST /api/transactions/upload
 // @desc    Upload a bank statement CSV
@@ -26,4 +27,4 @@ router.put(
   txController.updateTransaction
 );
 
-module.exports = router;
+export default router;

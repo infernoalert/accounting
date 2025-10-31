@@ -1,14 +1,16 @@
-const { validationResult } = require('express-validator');
+import { Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 // We will import the model, bcrypt, and jwt here when we write the logic
 
 /**
  * Handles new user registration
  */
-const register = async (req, res) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
 
   // Placeholder logic
@@ -25,11 +27,12 @@ const register = async (req, res) => {
 /**
  * Handles user login
  */
-const login = async (req, res) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    res.status(400).json({ errors: errors.array() });
+    return;
   }
 
   // Placeholder logic
@@ -42,9 +45,4 @@ const login = async (req, res) => {
   // 3. Compare password with hashed password (using bcryptjs)
   // 4. If passwords don't match, return 400
   // 5. Create and return a JWT token
-};
-
-module.exports = {
-  register,
-  login,
 };

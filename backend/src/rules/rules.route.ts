@@ -1,8 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const rulesController = require('./rules.controller');
-const rulesValidator = require('./rules.validator');
-// const authMiddleware = require('../middleware/auth.middleware'); // We will create this later
+import express, { Router } from 'express';
+import * as rulesController from './rules.controller';
+import * as rulesValidator from './rules.validator';
+// import authMiddleware from '../middleware/auth.middleware'; // We will create this later
+
+const router: Router = express.Router();
 
 // @route   POST /api/rules
 // @desc    Create or update a categorization rule
@@ -21,4 +22,4 @@ router.get(
   rulesController.getRules
 );
 
-module.exports = router;
+export default router;
