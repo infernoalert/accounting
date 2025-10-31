@@ -1,0 +1,78 @@
+@startuml
+!theme plain
+allowmixing
+
+' Define the main packages (our feature folders)
+package "Auth Module\n(src/auth)" <<Folder>> {
+  class "auth.routes.js" as AuthRoutes
+  class "auth.controller.js" as AuthController
+  class "auth.model.js" as AuthModel
+  class "auth.validator.js" as AuthValidator
+
+  AuthRoutes : + POST /register
+  AuthRoutes : + POST /login
+  AuthController : + register(req, res)
+  AuthController : + login(req, res)
+  AuthModel : + createUser(...)
+  AuthModel : + findUserByEmail(...)
+  AuthValidator : + validateRegister(req, res, next)
+}
+
+package "Transactions Module\n(src/transactions)" <<Folder>> {
+  class "transactions.routes.js" as TxRoutes
+  class "transactions.controller.js" as TxController
+  class "transactions.model.js" as TxModel
+  class "transactions.validator.js" as TxValidator
+
+  TxRoutes : + POST /upload
+  TxRoutes : + PUT /:id
+  TxController : + uploadCsv(req, res)
+  TxController : + updateTransaction(req, res)
+  TxModel : + createManyTransactions(...)
+  TxModel : + updateTransaction(...)
+  TxValidator : + validateUpdate(req, res, next)
+}
+
+package "Rules Module\n(src/rules)" <<Folder>> {
+  class "rules.routes.js" as RulesRoutes
+  class "rules.controller.js" as RulesController
+  class "rules.model.js" as RulesModel
+  class "rules.validator.js" as RulesValidator
+
+  RulesRoutes : + POST /
+  RulesRoutes : + GET /
+  RulesController : + createRule(req, res)
+  RulesController : + getRules(req, res)
+  RulesModel : + createRule(...)
+  RulesModel : + getRulesForUser(...)
+  RulesValidator : + validateRule(req, res, next)
+}
+
+' Define core components
+class "Express Server\n(src/index.js)" as Server
+component "PostgreSQL Connector" as DBConnector
+
+' Define relationships
+Server --> AuthRoutes : "uses"
+Server --> TxRoutes : "uses"
+Server --> RulesRoutes : "uses"
+
+AuthRoutes ..> AuthValidator : "uses (middleware)"
+AuthRoutes ..> AuthController : "uses"
+AuthController ..> AuthModel : "uses"
+
+TxRoutes ..> TxValidator : "uses (middleware)"
+TxRoutes ..> TxController : "uses"
+TxController ..> TxModel : "uses"
+TxController ..> RulesModel : "uses (to get rules)"
+
+RulesRoutes ..> RulesValidator : "uses (middleware)"
+RulesRoutes ..> RulesController : "uses"
+RulesController ..> RulesModel : "uses"
+
+AuthModel ..> DBConnector : "uses"
+TxModel ..> DBConnector : "uses"
+RulesModel ..> DBConnector : "uses"
+
+@enduml
+

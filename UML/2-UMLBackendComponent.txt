@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+
+' Define the main boundary of our system
+rectangle "Statement Backend (Express.js)" as Backend {
+
+  ' The core entry point
+  component "Express Server\n(src/index.js)" as Server
+  
+  ' The two feature modules we created
+  component "Transactions Module\n(src/transactions/...)" as Transactions
+  component "Rules Module\n(src/rules/...)" as Rules
+  
+  ' A future component for handling the DB connection
+  component "PostgreSQL Connector\n(node-postgres)" as DBConnector
+  
+  ' Define the API interfaces
+  interface "API Routes\n(Routing)" as ApiRouter
+  interface "Database Interface\n(Querying)" as DbInterface
+
+}
+
+' Define relationships
+Server -right- ApiRouter : "Exposes"
+ApiRouter <.. Transactions : "Implements"
+ApiRouter <.. Rules : "Implements"
+
+Transactions ..> DbInterface : "Uses"
+Rules ..> DbInterface : "Uses"
+DbInterface <.. DBConnector : "Implements"
+
+@enduml
